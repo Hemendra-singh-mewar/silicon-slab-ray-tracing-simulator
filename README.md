@@ -1,84 +1,21 @@
-# Interactive Silicon Ray Optics Lab v2
+# Silicon Ray Optics Simulator
 
-A browser based simulator inspired by the supplied silicon ray geometry figure.
+Interactive Streamlit application for silicon slab ray tracing.
 
-## Main modes
+## Features
 
-### 1. Reflected Beam Gap
+- Reflected beam separation for a plane parallel silicon slab
+- Snell's law calculation
+- Live thickness and incidence angle controls
+- Silicon and air refractive index controls
+- Critical angle calculation
+- Refraction and total internal reflection visualisation
+- Simple critical angle animation
+- Preset reproducing the 29.7 mm, 45 degree example
 
-The simulation shows:
+## Run locally
 
-- incident beam
-- front surface reflected beam
-- refracted beam inside silicon
-- internal reflection from the back surface
-- back reflected beam emerging from the front surface
-- sample thickness
-- incident and refracted angles
-- horizontal internal shift
-- perpendicular gap between the two reflected beams
-- optical path length
-
-For a parallel slab:
-
-r = sin^-1[(n_air / n_silicon) sin(i)]
-
-The horizontal displacement after the internal round trip is:
-
-2t tan(r)
-
-The perpendicular separation between the two emergent parallel beams is:
-
-Gap = 2t tan(r) cos(i)
-
-Example:
-
-t = 29.7 mm
-i = 45 degrees
-n_air = 1.0003
-n_silicon = 3.48
-
-gives approximately:
-
-r = 11.72 degrees
-2t tan(r) = 12.33 mm
-Gap = 8.72 mm
-
-### 2. Critical Angle
-
-The second mode switches to a silicon to air interface.
-
-The ray starts inside silicon and its angle is increased towards:
-
-theta_c = sin^-1(n_air / n_silicon)
-
-For silicon n = 3.48 and air n = 1.0003, the critical angle is approximately 16.69 degrees.
-
-The animation demonstrates:
-
-1. refraction below the critical angle
-2. the refracted ray becoming tangent to the interface at the critical angle
-3. total internal reflection above the critical angle
-
-## Run
-
-Open index.html in a browser.
-
-## GitHub Pages
-
-Create a GitHub repository, upload the four files, then enable Settings -> Pages -> Deploy from branch -> main -> root.
-
-No Python server is required.
-
-## Future research features
-
-- Fresnel Rs and Rp
-- reflected beam intensity
-- polarisation
-- multiple internal reflections
-- wavelength dependent silicon refractive index
-- temperature dependent refractive index
-- detector plane
-- beam footprint
-- finite beam diameter
-- etalon interference
+```bash
+pip install -r requirements.txt
+streamlit run streamlit_app.py
+```
