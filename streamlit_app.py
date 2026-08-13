@@ -1607,32 +1607,7 @@ if "previous_preset" not in st.session_state:
     st.session_state.previous_preset = "Small sample"
 
 
-# ============================================================
-# SIDEBAR
-# ============================================================
 
-st.sidebar.markdown("## Simulation")
-
-preset = st.sidebar.radio(
-    "Sample preset",
-    ["Small sample", "Large sample", "Custom"],
-    index=0,
-)
-
-
-# Apply preset only when the preset itself changes.
-# This means the user can subsequently move the sliders
-# without the values being reset.
-
-if preset != st.session_state.previous_preset:
-
-    if preset in PRESETS:
-
-        st.session_state.thickness = PRESETS[preset]["thickness"]
-        st.session_state.diameter = PRESETS[preset]["diameter"]
-        st.session_state.incidence = PRESETS[preset]["incidence"]
-
-    st.session_state.previous_preset = preset
 
 
 # ============================================================
