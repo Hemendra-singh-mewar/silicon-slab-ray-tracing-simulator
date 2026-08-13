@@ -29,8 +29,8 @@ PRESETS = {
     },
 
     "Large sample": {
-        "thickness": 180.0,
-        "diameter": 450.0,
+        "thickness": 100.0,
+        "diameter": 100.0,
         "incidence": 45.0,
         "n_si": 3.48,
         "n_air": 1.0003,
