@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Silicon Ray Optics Lab</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="lab-mark">PML</div>
+    <div>
+      <h1>Refractive Index, and Gap between Reflected Beams</h1>
+      <p>Interactive silicon ray optics laboratory</p>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button id="playBtn">▶ Animate</button>
+    <button id="resetBtn">Reset</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-mode="gap">Reflected Beam Gap</button>
+  <button class="tab" data-mode="critical">Critical Angle</button>
+</nav>
+
+<main>
+  <section class="controls">
+    <h2 id="controlTitle">Silicon slab</h2>
+
+    <label>Sample thickness <span id="thicknessValue">29.7 mm</span></label>
+    <input id="thickness" type="range" min="1" max="500" step="0.1" value="29.7">
+
+    <label>Angle of incidence <span id="angleValue">45.0°</span></label>
+    <input id="angle" type="range" min="0" max="89.9" step="0.1" value="45">
+
+    <label>Silicon refractive index <span id="nSiValue">3.480</span></label>
+    <input id="nSi" type="range" min="1.01" max="4.50" step="0.001" value="3.480">
+
+    <label>Air refractive index <span id="nAirValue">1.0003</span></label>
+    <input id="nAir" type="range" min="1.0000" max="1.1000" step="0.0001" value="1.0003">
+
+    <div class="divider"></div>
+
+    <div class="checks">
+      <label><input id="showNormals" type="checkbox" checked> Show normals</label>
+      <label><input id="showLabels" type="checkbox" checked> Show labels</label>
+      <label><input id="showFormula" type="checkbox" checked> Show formula</label>
+    </div>
+
+    <div class="info">
+      <h3>Simulation</h3>
+      <p id="modeDescription">
+        The incident beam enters silicon, reflects from the back surface and exits through the front surface. The front and back reflected beams remain parallel.
+      </p>
+    </div>
+  </section>
+
+  <section class="simulation">
+    <canvas id="canvas"></canvas>
+  </section>
+
+  <aside class="results">
+    <h2>Live results</h2>
+
+    <div class="result"><span>Incident angle, i</span><strong id="outI">45.00°</strong></div>
+    <div class="result"><span>Refracted angle, r</span><strong id="outR">11.73°</strong></div>
+    <div class="result"><span>Critical angle</span><strong id="outCritical">16.69°</strong></div>
+    <div class="result"><span>Internal horizontal shift</span><strong id="outShift">12.33 mm</strong></div>
+
+    <div class="result highlight">
+      <span>Beam gap</span>
+      <strong id="outGap">8.72 mm</strong>
+    </div>
+
+    <div class="result"><span>Optical path in silicon</span><strong id="outOPL">60.59 mm</strong></div>
+
+    <div id="criticalStatus" class="status">Transmission through the slab</div>
+
+    <div id="formulaPanel" class="formula">
+      <h3>Gap equation</h3>
+      <p>Snell's law</p>
+      <code>r = sin⁻¹[(n<sub>air</sub>/n<sub>silicon</sub>) sin i]</code>
+      <p>Perpendicular gap</p>
+      <code>Gap = 2t tan(r) cos(i)</code>
+      <p>For the example shown:</p>
+      <code>t = 29.7 mm, i = 45°, n<sub>Si</sub> = 3.48 → Gap = 8.72 mm</code>
+    </div>
+
+    <div id="criticalPanel" class="formula hidden">
+      <h3>Critical angle</h3>
+      <p>For silicon to air:</p>
+      <code>θ<sub>c</sub> = sin⁻¹(n<sub>air</sub>/n<sub>silicon</sub>)</code>
+      <p>The animation increases the angle inside silicon towards θ<sub>c</sub>. At the critical angle the refracted ray travels along the interface. Above it, total internal reflection occurs.</p>
+    </div>
+  </aside>
+</main>
+
+<footer>
+  Interactive Silicon Ray Optics Lab · Geometrical optics model · 1550 nm silicon example
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
