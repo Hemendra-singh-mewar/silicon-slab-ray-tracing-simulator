@@ -1,21 +1,28 @@
 # Silicon Ray Optics Simulator
 
-Interactive Streamlit application for silicon slab ray tracing.
+<p align="center">
+  <a href="https://silicon-ray-optics.streamlit.app/">
+    <img src="https://img.shields.io/badge/🚀%20OPEN%20INTERACTIVE%20SIMULATION-FF4B4B?style=for-the-badge" alt="Open Interactive Simulation">
+  </a>
+</p>
+
+<p align="center">
+  Interactive ray tracing and optical geometry simulator for a plane parallel silicon slab.
+</p>
+
+---
 
 ## Features
 
-- Reflected beam separation for a plane parallel silicon slab
-- Snell's law calculation
-- Live thickness and incidence angle controls
-- Silicon and air refractive index controls
-- Critical angle calculation
-- Refraction and total internal reflection visualisation
-- Simple critical angle animation
-- Preset reproducing the 29.7 mm, 45 degree example
-
-## Run locally
-
-```bash
-pip install -r requirements.txt
-streamlit run streamlit_app.py
-```
+- Live ray tracing
+- Incident and reflected beams
+- Refraction through silicon
+- Internal reflection from the back surface
+- Second reflected beam emerging from the front surface
+- Snell's law
+- Critical angle and total internal reflection
+- Perpendicular beam separation
+- Live geometry updates
+- Small sample preset
+- Large sample preset
+- Custom sample parameters
