@@ -1,8 +1,0 @@
-create-pages:
-  script:
-    - mkdir public
-    - cp -r index.html style.css app.js README.md public/
-  pages: true
-  artifacts:
-    paths:
-      - public
