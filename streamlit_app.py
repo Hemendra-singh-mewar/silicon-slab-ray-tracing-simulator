@@ -49,7 +49,7 @@ st.markdown(
 # ============================================================
 PRESETS = {
     "Small sample": {"thickness": 29.7, "diameter": 42.0, "angle": 45.0},
-    "Large sample": {"thickness": 180.0, "diameter": 450.0, "angle": 45.0},
+    "Large sample": {"thickness": 100.0, "diameter": 100.0, "angle": 45.0},
 }
 
 # ============================================================
