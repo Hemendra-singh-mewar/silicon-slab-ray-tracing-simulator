@@ -2,6 +2,7 @@ import numpy as np
 import streamlit as st
 import plotly.graph_objects as go
 
+
 # ============================================================
 # PAGE CONFIGURATION
 # ============================================================
@@ -10,66 +11,67 @@ st.set_page_config(
     page_title="Silicon Ray Optics Simulator",
     page_icon="🔬",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
+
 # ============================================================
-# CSS
+# PAGE STYLE
 # ============================================================
 
 st.markdown(
     """
     <style>
+
     .main-title {
         font-size: 42px;
         font-weight: 700;
-        margin-bottom: 0px;
+        margin-bottom: 2px;
     }
 
     .subtitle {
         font-size: 16px;
         color: #6b7280;
-        margin-bottom: 25px;
+        margin-bottom: 24px;
     }
 
     .section-title {
-        font-size: 25px;
+        font-size: 26px;
         font-weight: 650;
         margin-top: 20px;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
     }
 
-    .info-box {
+    .status-normal {
         padding: 14px 18px;
-        border-radius: 8px;
+        border-radius: 9px;
         background-color: #eef6ff;
-        border: 1px solid #cfe3ff;
+        border: 1px solid #c9e0ff;
         margin-bottom: 18px;
     }
 
-    .tir-box {
+    .status-tir {
         padding: 14px 18px;
-        border-radius: 8px;
+        border-radius: 9px;
         background-color: #fff4e5;
         border: 1px solid #ffd18a;
         margin-bottom: 18px;
     }
 
-    .normal-box {
+    .physics-note {
         padding: 14px 18px;
-        border-radius: 8px;
-        background-color: #f5f5f5;
+        border-radius: 9px;
+        background-color: #f7f7f7;
         border: 1px solid #dddddd;
-        margin-bottom: 18px;
+        margin-top: 15px;
+        margin-bottom: 15px;
     }
 
-    [data-testid="stMetricValue"] {
-        font-size: 28px;
-    }
     </style>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
+
 
 # ============================================================
 # TITLE
@@ -77,45 +79,35 @@ st.markdown(
 
 st.markdown(
     '<div class="main-title">Silicon Ray Optics Simulator</div>',
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 st.markdown(
     '<div class="subtitle">'
     'Live ray tracing through a plane parallel silicon slab. '
-    'All optical geometry updates immediately when a control changes.'
+    'The complete optical geometry updates immediately when a control changes.'
     '</div>',
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
+
 
 # ============================================================
 # PRESETS
 # ============================================================
 
-st.sidebar.markdown("## Simulation")
-
-preset = st.sidebar.radio(
-    "Sample preset",
-    ["Small sample", "Large sample", "Custom"],
-    index=0
-)
-
-# ------------------------------------------------------------
-# Preset definitions
-# ------------------------------------------------------------
-
 PRESETS = {
     "Small sample": {
         "thickness": 29.7,
         "diameter": 42.0,
-        "incidence": 45.0
+        "incidence": 45.0,
     },
     "Large sample": {
         "thickness": 180.0,
         "diameter": 450.0,
-        "incidence": 45.0
-    }
+        "incidence": 45.0,
+    },
 }
+
 
 # ============================================================
 # SESSION STATE
@@ -139,14 +131,40 @@ if "n_air" not in st.session_state:
 if "wavelength" not in st.session_state:
     st.session_state.wavelength = 1550.0
 
-# Apply preset whenever selected
-if preset in PRESETS:
-    st.session_state.thickness = PRESETS[preset]["thickness"]
-    st.session_state.diameter = PRESETS[preset]["diameter"]
-    st.session_state.incidence = PRESETS[preset]["incidence"]
+if "previous_preset" not in st.session_state:
+    st.session_state.previous_preset = "Small sample"
+
 
 # ============================================================
-# SIDEBAR CONTROLS
+# SIDEBAR
+# ============================================================
+
+st.sidebar.markdown("## Simulation")
+
+preset = st.sidebar.radio(
+    "Sample preset",
+    ["Small sample", "Large sample", "Custom"],
+    index=0,
+)
+
+
+# Apply preset only when the preset itself changes.
+# This means the user can subsequently move the sliders
+# without the values being reset.
+
+if preset != st.session_state.previous_preset:
+
+    if preset in PRESETS:
+
+        st.session_state.thickness = PRESETS[preset]["thickness"]
+        st.session_state.diameter = PRESETS[preset]["diameter"]
+        st.session_state.incidence = PRESETS[preset]["incidence"]
+
+    st.session_state.previous_preset = preset
+
+
+# ============================================================
+# GEOMETRY CONTROLS
 # ============================================================
 
 st.sidebar.markdown("---")
@@ -158,10 +176,10 @@ thickness = st.sidebar.slider(
     max_value=250.0,
     value=float(st.session_state.thickness),
     step=0.1,
-    key="thickness_slider"
 )
 
 st.session_state.thickness = thickness
+
 
 incidence = st.sidebar.slider(
     "External incidence angle, i (°)",
@@ -169,10 +187,10 @@ incidence = st.sidebar.slider(
     max_value=89.9,
     value=float(st.session_state.incidence),
     step=0.1,
-    key="incidence_slider"
 )
 
 st.session_state.incidence = incidence
+
 
 diameter = st.sidebar.number_input(
     "Sample diameter (mm)",
@@ -180,11 +198,13 @@ diameter = st.sidebar.number_input(
     max_value=1000.0,
     value=float(st.session_state.diameter),
     step=1.0,
-    key="diameter_input"
 )
 
 st.session_state.diameter = diameter
 
+
+# ============================================================
+# OPTICAL PROPERTY CONTROLS
 # ============================================================
 
 st.sidebar.markdown("---")
@@ -197,10 +217,10 @@ n_si = st.sidebar.number_input(
     value=float(st.session_state.n_si),
     step=0.0001,
     format="%.4f",
-    key="n_si_input"
 )
 
 st.session_state.n_si = n_si
+
 
 n_air = st.sidebar.number_input(
     "Air refractive index, nair",
@@ -209,10 +229,10 @@ n_air = st.sidebar.number_input(
     value=float(st.session_state.n_air),
     step=0.0001,
     format="%.4f",
-    key="n_air_input"
 )
 
 st.session_state.n_air = n_air
+
 
 wavelength = st.sidebar.number_input(
     "Wavelength (nm)",
@@ -220,29 +240,28 @@ wavelength = st.sidebar.number_input(
     max_value=5000.0,
     value=float(st.session_state.wavelength),
     step=1.0,
-    key="wavelength_input"
 )
 
 st.session_state.wavelength = wavelength
 
-# ============================================================
-# POLARISATION
-# ============================================================
 
 polarisation = st.sidebar.selectbox(
     "Polarisation for Fresnel values",
-    ["Unpolarised", "s", "p"]
+    ["Unpolarised", "s", "p"],
 )
 
+
 # ============================================================
-# OPTICAL CALCULATIONS
+# BASIC ANGLES
 # ============================================================
 
 i_deg = incidence
 i_rad = np.deg2rad(i_deg)
 
-# Snell's law:
-# n_air sin(i) = n_si sin(r)
+
+# ============================================================
+# SNELL'S LAW
+# ============================================================
 
 sin_r = (n_air / n_si) * np.sin(i_rad)
 
@@ -252,38 +271,108 @@ sin_r = np.clip(sin_r, -1.0, 1.0)
 r_rad = np.arcsin(sin_r)
 r_deg = np.rad2deg(r_rad)
 
-# Critical angle for silicon -> air
-critical_ratio = n_air / n_si
 
-if critical_ratio < 1:
-    critical_rad = np.arcsin(critical_ratio)
+# ============================================================
+# CRITICAL ANGLE
+# ============================================================
+
+if n_si > n_air:
+
+    critical_rad = np.arcsin(n_air / n_si)
     critical_deg = np.rad2deg(critical_rad)
-else:
-    critical_deg = 90.0
-    critical_rad = np.pi / 2
 
-# TIR is determined by the ANGLE INSIDE SILICON,
-# not by the external angle in air.
+else:
+
+    critical_rad = np.pi / 2
+    critical_deg = 90.0
+
+
+# ============================================================
+# TIR CONDITION
+#
+# IMPORTANT:
+#
+# TIR at the silicon -> air interface depends on the
+# INTERNAL incidence angle at the back surface.
+#
+# Therefore:
+#
+#       r > theta_c
+#
+# NOT:
+#
+#       i > theta_c
+# ============================================================
+
 tir = r_deg >= critical_deg
 
+
 # ============================================================
-# BEAM SEPARATION
+# RAY GEOMETRY
 # ============================================================
 
-# Lateral displacement between the two reflection points
-# at the front surface:
+# Coordinate system:
 #
-#     2 t tan(r)
+#                AIR
 #
-# Perpendicular separation between the two parallel
-# reflected beams:
+#              y > 0
 #
-#     G = 2 t tan(r) cos(i)
+# -------------------------------  front surface
+#                 |
+#                 | normal
+#                 |
+#                SILICON
+#                 |
+#                 |
+# -------------------------------  back surface
 #
-# This is the perpendicular distance between the
-# front reflected beam and the back reflected beam.
+#              y < 0
+#
+#
+# Front reflection point:
+#
+#       P1 = (0, 0)
+#
+# Refracted ray reaches back surface at:
+#
+#       x1 = t tan(r)
+#
+# After internal reflection it reaches front surface at:
+#
+#       x2 = 2 t tan(r)
+#
+# This is the origin of the second external reflected beam.
 
-beam_gap = 2.0 * thickness * np.tan(r_rad) * np.cos(i_rad)
+x1 = thickness * np.tan(r_rad)
+
+x2 = 2.0 * x1
+
+
+# ============================================================
+# PERPENDICULAR BEAM GAP
+# ============================================================
+
+# The two reflected beams are parallel.
+#
+# Direction of the reflected beams:
+#
+#       u = (sin(i), cos(i))
+#
+# A perpendicular unit vector is:
+#
+#       n = (cos(i), -sin(i))
+#
+# The perpendicular separation is:
+#
+#       G = 2 t tan(r) cos(i)
+
+beam_gap = abs(
+    2.0
+    * thickness
+    * np.tan(r_rad)
+    * np.cos(i_rad)
+)
+
 
 # ============================================================
 # FRESNEL COEFFICIENTS
@@ -292,90 +381,139 @@ beam_gap = 2.0 * thickness * np.tan(r_rad) * np.cos(i_rad)
 cos_i = np.cos(i_rad)
 cos_r = np.cos(r_rad)
 
-# Air -> silicon amplitude coefficients
-rs = (n_air * cos_i - n_si * cos_r) / (
-    n_air * cos_i + n_si * cos_r
+
+# s polarisation
+
+rs = (
+    (n_air * cos_i - n_si * cos_r)
+    /
+    (n_air * cos_i + n_si * cos_r)
 )
 
-rp = (n_si * cos_i - n_air * cos_r) / (
-    n_si * cos_i + n_air * cos_r
+ts = (
+    2.0 * n_air * cos_i
+    /
+    (n_air * cos_i + n_si * cos_r)
 )
 
-ts = (2 * n_air * cos_i) / (
-    n_air * cos_i + n_si * cos_r
+
+# p polarisation
+
+rp = (
+    (n_si * cos_i - n_air * cos_r)
+    /
+    (n_si * cos_i + n_air * cos_r)
 )
 
-tp = (2 * n_air * cos_i) / (
-    n_si * cos_i + n_air * cos_r
+tp = (
+    2.0 * n_air * cos_i
+    /
+    (n_si * cos_i + n_air * cos_r)
 )
+
 
 R_s = rs ** 2
 R_p = rp ** 2
 
-# Power transmission coefficients
 T_s = (
-    (n_si * cos_r) /
+    (n_si * cos_r)
+    /
     (n_air * cos_i)
 ) * ts ** 2
 
 T_p = (
-    (n_si * cos_r) /
+    (n_si * cos_r)
+    /
     (n_air * cos_i)
 ) * tp ** 2
 
+
 if polarisation == "s":
+
     R_front = R_s
     T_front = T_s
 
 elif polarisation == "p":
+
     R_front = R_p
     T_front = T_p
 
 else:
+
     R_front = 0.5 * (R_s + R_p)
     T_front = 0.5 * (T_s + T_p)
 
+
 # ============================================================
-# STATUS MESSAGE
+# STATUS
 # ============================================================
 
 if tir:
 
     st.markdown(
         f"""
-        <div class="tir-box">
-        <b>🔴 Total internal reflection</b><br>
-        The ray inside silicon has an incidence angle of
-        <b>{r_deg:.2f}°</b>, which is greater than the
-        silicon → air critical angle of <b>{critical_deg:.2f}°</b>.
-        Therefore, no transmitted ray leaves the back surface.
+        <div class="status-tir">
+
+        <b>🔴 Total internal reflection at the back surface</b><br><br>
+
+        The ray inside the silicon reaches the back surface at
+
+        <b>{r_deg:.2f}°</b>
+
+        to the normal.
+
+        The silicon → air critical angle is
+
+        <b>{critical_deg:.2f}°</b>.
+
+        Therefore
+
+        <b>{r_deg:.2f}° &gt; {critical_deg:.2f}°</b>
+
+        and the ray undergoes total internal reflection.
+
         </div>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
 else:
 
     st.markdown(
         f"""
-        <div class="info-box">
-        <b>🟢 Transmission through the back silicon → air surface</b><br>
-        The ray inside silicon reaches the back surface at
-        <b>{r_deg:.2f}°</b>. The critical angle is
-        <b>{critical_deg:.2f}°</b>, so transmission through the
-        back surface occurs.
+        <div class="status-normal">
+
+        <b>🟢 Transmission through the back silicon → air surface</b><br><br>
+
+        The ray inside the silicon reaches the back surface at
+
+        <b>{r_deg:.2f}°</b>
+
+        to the normal.
+
+        The silicon → air critical angle is
+
+        <b>{critical_deg:.2f}°</b>.
+
+        Therefore
+
+        <b>{r_deg:.2f}° &lt; {critical_deg:.2f}°</b>
+
+        and transmission through the back surface occurs.
+
         </div>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
+
 # ============================================================
-# LIVE OPTICAL QUANTITIES
+# LIVE QUANTITIES
 # ============================================================
 
 st.markdown(
     '<div class="section-title">Live optical geometry</div>',
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 c1, c2, c3, c4 = st.columns(4)
@@ -383,207 +521,262 @@ c1, c2, c3, c4 = st.columns(4)
 with c1:
     st.metric(
         "External angle, i",
-        f"{i_deg:.2f}°"
+        f"{i_deg:.2f}°",
     )
 
 with c2:
     st.metric(
         "Internal angle, r",
-        f"{r_deg:.2f}°"
+        f"{r_deg:.2f}°",
     )
 
 with c3:
     st.metric(
         "Critical angle, θc",
-        f"{critical_deg:.2f}°"
+        f"{critical_deg:.2f}°",
     )
 
 with c4:
     st.metric(
         "Perpendicular beam gap, G",
-        f"{beam_gap:.2f} mm"
+        f"{beam_gap:.2f} mm",
     )
 
+
 # ============================================================
-# OPTICAL DIAGRAM
+# PLOT GEOMETRY
 # ============================================================
 
-# The slab is centred around x = 0.
-#
-# Front surface: y = 0
-# Back surface:  y = -t
-#
-# Incident ray comes from above-left.
-#
-# Front reflected ray goes upwards-right.
-#
-# Refracted ray travels downwards-right.
-#
-# At the back surface it reflects upwards-right.
-#
-# It then exits the front surface as the
-# "back reflected beam".
-#
-# The two reflected beams are parallel.
+# ------------------------------------------------------------
+# Incident ray
+# ------------------------------------------------------------
 
-half_t = thickness / 2.0
+air_length = max(
+    0.8 * thickness,
+    20.0,
+)
 
-# Ray lengths for visualisation
-air_ray = max(thickness * 0.8, 20.0)
-internal_ray = thickness
-output_ray = max(thickness * 0.8, 20.0)
+incident_start_x = -air_length * np.sin(i_rad)
+incident_start_y = air_length * np.cos(i_rad)
 
-# Incident ray starts above the front surface.
-incident_start_x = -air_ray * np.sin(i_rad)
-incident_start_y = air_ray * np.cos(i_rad)
 
-# Front reflection
-front_reflected_end_x = air_ray * np.sin(i_rad)
-front_reflected_end_y = air_ray * np.cos(i_rad)
+# ------------------------------------------------------------
+# Front reflected beam
+# ------------------------------------------------------------
 
-# Internal refraction
-internal_dx = thickness * np.tan(r_rad)
+front_reflected_length = max(
+    0.9 * thickness,
+    20.0,
+)
 
-# Back surface intersection
-back_x = internal_dx
+front_reflected_end_x = (
+    front_reflected_length * np.sin(i_rad)
+)
+
+front_reflected_end_y = (
+    front_reflected_length * np.cos(i_rad)
+)
+
+
+# ------------------------------------------------------------
+# Refracted ray inside silicon
+# ------------------------------------------------------------
+
+back_x = x1
 back_y = -thickness
 
-# Internal reflection returns to front surface
-front_second_x = 2.0 * internal_dx
-front_second_y = 0.0
 
-# Back reflected beam after leaving front surface
+# ------------------------------------------------------------
+# Internal reflection
+# ------------------------------------------------------------
+
+second_front_x = x2
+second_front_y = 0.0
+
+
+# ------------------------------------------------------------
+# Second external reflected beam
+# ------------------------------------------------------------
+
+back_reflected_length = max(
+    0.9 * thickness,
+    20.0,
+)
+
 back_reflected_end_x = (
-    front_second_x + output_ray * np.sin(i_rad)
+    second_front_x
+    + back_reflected_length * np.sin(i_rad)
 )
 
 back_reflected_end_y = (
-    output_ray * np.cos(i_rad)
+    back_reflected_length * np.cos(i_rad)
 )
 
+
+# ------------------------------------------------------------
+# Back transmitted beam
+# ------------------------------------------------------------
+
+if not tir:
+
+    transmitted_length = max(
+        0.8 * thickness,
+        20.0,
+    )
+
+    back_transmitted_end_x = (
+        back_x
+        + transmitted_length * np.sin(i_rad)
+    )
+
+    back_transmitted_end_y = (
+        -thickness
+        - transmitted_length * np.cos(i_rad)
+    )
+
+
 # ============================================================
-# FIGURE
+# PLOTLY FIGURE
 # ============================================================
 
 fig = go.Figure()
 
-# ------------------------------------------------------------
-# Silicon slab
-# ------------------------------------------------------------
 
-slab_x = [
-    -diameter / 2,
-    diameter / 2,
-    diameter / 2,
-    -diameter / 2,
-    -diameter / 2
-]
+# ============================================================
+# SILICON SLAB
+# ============================================================
 
-slab_y = [
-    0,
-    0,
-    -thickness,
-    -thickness,
-    0
-]
+slab_left = -diameter / 2.0
+slab_right = diameter / 2.0
 
 fig.add_trace(
     go.Scatter(
-        x=slab_x,
-        y=slab_y,
+        x=[
+            slab_left,
+            slab_right,
+            slab_right,
+            slab_left,
+            slab_left,
+        ],
+        y=[
+            0,
+            0,
+            -thickness,
+            -thickness,
+            0,
+        ],
         mode="lines",
-        line=dict(width=3),
         fill="toself",
-        fillcolor="rgba(100,150,220,0.15)",
-        name="Silicon slab",
-        hoverinfo="skip"
+        fillcolor="rgba(80,140,210,0.12)",
+        line=dict(width=2),
+        name="Silicon",
+        hoverinfo="skip",
     )
 )
 
-# ------------------------------------------------------------
-# Front surface
-# ------------------------------------------------------------
+
+# ============================================================
+# FRONT SURFACE
+# ============================================================
 
 fig.add_trace(
     go.Scatter(
-        x=[-diameter / 2, diameter / 2],
+        x=[slab_left, slab_right],
         y=[0, 0],
         mode="lines",
         line=dict(width=4),
-        name="Front surface"
+        name="Front surface",
+        hoverinfo="skip",
     )
 )
 
-# ------------------------------------------------------------
-# Back surface
-# ------------------------------------------------------------
+
+# ============================================================
+# BACK SURFACE
+# ============================================================
 
 fig.add_trace(
     go.Scatter(
-        x=[-diameter / 2, diameter / 2],
+        x=[slab_left, slab_right],
         y=[-thickness, -thickness],
         mode="lines",
         line=dict(width=4),
-        name="Back surface"
+        name="Back surface",
+        hoverinfo="skip",
     )
 )
 
+
 # ============================================================
-# NORMALS
+# FRONT NORMAL
 # ============================================================
 
-normal_length = max(thickness * 0.20, 10.0)
+normal_length = max(
+    0.25 * thickness,
+    10.0,
+)
 
-# Front normal
 fig.add_trace(
     go.Scatter(
         x=[0, 0],
-        y=[-normal_length, normal_length],
+        y=[
+            -normal_length,
+            normal_length,
+        ],
         mode="lines",
         line=dict(
             width=2,
-            dash="dash"
+            dash="dash",
         ),
-        name="Front normal"
+        name="Front normal",
+        hoverinfo="skip",
     )
 )
 
-# Back normal
+
+# ============================================================
+# BACK NORMAL
+# ============================================================
+
 fig.add_trace(
     go.Scatter(
         x=[back_x, back_x],
         y=[
             -thickness - normal_length,
-            -thickness + normal_length
+            -thickness + normal_length,
         ],
         mode="lines",
         line=dict(
             width=2,
-            dash="dash"
+            dash="dash",
         ),
-        name="Back normal"
+        name="Back normal",
+        hoverinfo="skip",
     )
 )
 
+
 # ============================================================
-# INCIDENT RAY WITH ARROW
+# INCIDENT RAY
 # ============================================================
 
 fig.add_trace(
     go.Scatter(
-        x=[incident_start_x, 0],
-        y=[incident_start_y, 0],
-        mode="lines+markers",
+        x=[
+            incident_start_x,
+            0,
+        ],
+        y=[
+            incident_start_y,
+            0,
+        ],
+        mode="lines",
         line=dict(width=4),
-        marker=dict(
-            size=[0, 9],
-            symbol=["circle", "arrow"]
-        ),
-        name="Incident ray"
+        name="Incident ray",
+        hoverinfo="skip",
     )
 )
 
-# Add explicit arrow annotation for incident direction
 fig.add_annotation(
     x=0,
     y=0,
@@ -596,8 +789,9 @@ fig.add_annotation(
     showarrow=True,
     arrowhead=3,
     arrowsize=1.2,
-    arrowwidth=2
+    arrowwidth=2.5,
 )
+
 
 # ============================================================
 # FRONT REFLECTED BEAM
@@ -605,11 +799,18 @@ fig.add_annotation(
 
 fig.add_trace(
     go.Scatter(
-        x=[0, front_reflected_end_x],
-        y=[0, front_reflected_end_y],
+        x=[
+            0,
+            front_reflected_end_x,
+        ],
+        y=[
+            0,
+            front_reflected_end_y,
+        ],
         mode="lines",
         line=dict(width=4),
-        name="Front reflected beam"
+        name="Front reflected beam",
+        hoverinfo="skip",
     )
 )
 
@@ -624,9 +825,10 @@ fig.add_annotation(
     ayref="y",
     showarrow=True,
     arrowhead=3,
-    arrowsize=1.2,
-    arrowwidth=2
+    arrowsize=1.1,
+    arrowwidth=2.2,
 )
+
 
 # ============================================================
 # REFRACTED RAY INSIDE SILICON
@@ -634,32 +836,46 @@ fig.add_annotation(
 
 fig.add_trace(
     go.Scatter(
-        x=[0, back_x],
-        y=[0, back_y],
+        x=[
+            0,
+            back_x,
+        ],
+        y=[
+            0,
+            back_y,
+        ],
         mode="lines",
         line=dict(width=4),
-        name="Refracted ray inside silicon"
+        name="Refracted ray inside silicon",
+        hoverinfo="skip",
     )
 )
 
+
 # ============================================================
-# INTERNAL REFLECTION
+# INTERNAL REFLECTION FROM BACK SURFACE
 # ============================================================
 
 fig.add_trace(
     go.Scatter(
-        x=[back_x, front_second_x],
-        y=[back_y, front_second_y],
+        x=[
+            back_x,
+            second_front_x,
+        ],
+        y=[
+            back_y,
+            0,
+        ],
         mode="lines",
         line=dict(width=4),
-        name="Internal reflection from back surface"
+        name="Internal reflection from back surface",
+        hoverinfo="skip",
     )
 )
 
-# Arrow showing internal reflected direction
 fig.add_annotation(
-    x=front_second_x,
-    y=front_second_y,
+    x=second_front_x,
+    y=0,
     ax=back_x,
     ay=back_y,
     xref="x",
@@ -669,37 +885,46 @@ fig.add_annotation(
     showarrow=True,
     arrowhead=3,
     arrowsize=1.1,
-    arrowwidth=2
+    arrowwidth=2.2,
 )
 
+
 # ============================================================
-# BACK REFLECTED BEAM
+# SECOND REFLECTED BEAM
 # ============================================================
 
 fig.add_trace(
     go.Scatter(
-        x=[front_second_x, back_reflected_end_x],
-        y=[front_second_y, back_reflected_end_y],
+        x=[
+            second_front_x,
+            back_reflected_end_x,
+        ],
+        y=[
+            0,
+            back_reflected_end_y,
+        ],
         mode="lines",
         line=dict(width=4),
-        name="Back reflected beam"
+        name="Back reflected beam",
+        hoverinfo="skip",
     )
 )
 
 fig.add_annotation(
     x=back_reflected_end_x,
     y=back_reflected_end_y,
-    ax=front_second_x,
-    ay=front_second_y,
+    ax=second_front_x,
+    ay=0,
     xref="x",
     yref="y",
     axref="x",
     ayref="y",
     showarrow=True,
     arrowhead=3,
-    arrowsize=1.2,
-    arrowwidth=2
+    arrowsize=1.1,
+    arrowwidth=2.2,
 )
+
 
 # ============================================================
 # BACK TRANSMITTED BEAM
@@ -707,27 +932,20 @@ fig.add_annotation(
 
 if not tir:
 
-    # At a parallel interface the transmitted ray exits
-    # at the same angle to the normal as the original
-    # incident ray, but on the other side of the slab.
-
-    transmitted_length = output_ray
-
-    back_transmitted_end_x = (
-        back_x + transmitted_length * np.sin(i_rad)
-    )
-
-    back_transmitted_end_y = (
-        -thickness - transmitted_length * np.cos(i_rad)
-    )
-
     fig.add_trace(
         go.Scatter(
-            x=[back_x, back_transmitted_end_x],
-            y=[back_y, back_transmitted_end_y],
+            x=[
+                back_x,
+                back_transmitted_end_x,
+            ],
+            y=[
+                back_y,
+                back_transmitted_end_y,
+            ],
             mode="lines",
             line=dict(width=4),
-            name="Back transmitted beam"
+            name="Back transmitted beam",
+            hoverinfo="skip",
         )
     )
 
@@ -742,113 +960,166 @@ if not tir:
         ayref="y",
         showarrow=True,
         arrowhead=3,
-        arrowsize=1.2,
-        arrowwidth=2
+        arrowsize=1.1,
+        arrowwidth=2.2,
     )
 
-# ============================================================
-# BEAM GAP
-# ============================================================
 
-# The beam gap is measured perpendicular to the two
-# parallel reflected beams.
+# ============================================================
+# PERPENDICULAR BEAM GAP
 #
-# Do NOT draw a horizontal dotted line here because that
-# would not be perpendicular to the reflected beams.
+# IMPORTANT:
+#
+# The shortest perpendicular between the two infinite
+# parallel reflected beam lines would intersect the second
+# line below the front surface if drawn from the first
+# reflection point.
+#
+# Therefore we choose a point further along the first
+# reflected beam. The perpendicular is then drawn between
+# the actual two visible reflected rays.
+# ============================================================
 
-# Unit vector perpendicular to reflected beam
-perp_x = -np.cos(i_rad)
-perp_y = np.sin(i_rad)
+u_x = np.sin(i_rad)
+u_y = np.cos(i_rad)
 
-gap_start_x = 0.0
-gap_start_y = 0.0
+normal_x = np.cos(i_rad)
+normal_y = -np.sin(i_rad)
 
-gap_end_x = (
-    gap_start_x + beam_gap * perp_x
+
+# Choose a point along the first reflected beam far enough
+# from the surface that the perpendicular endpoint also
+# lies on the visible second reflected beam.
+
+minimum_s = x2 * np.sin(i_rad) + 0.15 * air_length
+
+gap_ray_position = max(
+    0.45 * front_reflected_length,
+    minimum_s,
 )
 
-gap_end_y = (
-    gap_start_y + beam_gap * perp_y
+
+# Point A on first reflected beam
+A_x = gap_ray_position * u_x
+A_y = gap_ray_position * u_y
+
+
+# Point B on second reflected beam
+B_x = A_x + beam_gap * normal_x
+B_y = A_y + beam_gap * normal_y
+
+
+# ------------------------------------------------------------
+# Gap line
+# ------------------------------------------------------------
+
+fig.add_trace(
+    go.Scatter(
+        x=[A_x, B_x],
+        y=[A_y, B_y],
+        mode="lines",
+        line=dict(
+            width=2.5,
+            dash="dot",
+        ),
+        name="Perpendicular beam gap",
+        hoverinfo="skip",
+    )
 )
 
-# Only draw the gap indicator if the gap is visually useful
-if beam_gap > 0.01:
 
-    fig.add_trace(
-        go.Scatter(
-            x=[gap_start_x, gap_end_x],
-            y=[gap_start_y, gap_end_y],
-            mode="lines",
-            line=dict(
-                width=2,
-                dash="dot"
-            ),
-            name="Perpendicular beam gap"
-        )
-    )
+# ------------------------------------------------------------
+# Gap arrows at both ends
+# ------------------------------------------------------------
 
-    fig.add_annotation(
-        x=gap_end_x,
-        y=gap_end_y,
-        ax=gap_start_x,
-        ay=gap_start_y,
-        xref="x",
-        yref="y",
-        axref="x",
-        ayref="y",
-        showarrow=True,
-        arrowhead=3,
-        arrowsize=1.0,
-        arrowwidth=1.5
-    )
+fig.add_annotation(
+    x=A_x,
+    y=A_y,
+    ax=B_x,
+    ay=B_y,
+    xref="x",
+    yref="y",
+    axref="x",
+    ayref="y",
+    showarrow=True,
+    arrowhead=2,
+    arrowsize=1,
+    arrowwidth=1.5,
+)
 
-    fig.add_annotation(
-        x=(gap_start_x + gap_end_x) / 2,
-        y=(gap_start_y + gap_end_y) / 2,
-        text=f"G = {beam_gap:.2f} mm",
-        showarrow=False,
-        font=dict(size=13)
-    )
+fig.add_annotation(
+    x=B_x,
+    y=B_y,
+    ax=A_x,
+    ay=A_y,
+    xref="x",
+    yref="y",
+    axref="x",
+    ayref="y",
+    showarrow=True,
+    arrowhead=2,
+    arrowsize=1,
+    arrowwidth=1.5,
+)
+
+
+# ============================================================
+# GAP LABEL
+# ============================================================
+
+fig.add_annotation(
+    x=(A_x + B_x) / 2,
+    y=(A_y + B_y) / 2,
+    text=f"<b>G = {beam_gap:.2f} mm</b>",
+    showarrow=False,
+    font=dict(size=13),
+    bgcolor="rgba(255,255,255,0.85)",
+)
+
 
 # ============================================================
 # ANGLE LABELS
 # ============================================================
 
 fig.add_annotation(
-    x=-0.8 * np.sin(i_rad),
-    y=0.8 * np.cos(i_rad),
+    x=-0.55 * np.sin(i_rad) * air_length,
+    y=0.55 * np.cos(i_rad) * air_length,
     text=f"i = {i_deg:.2f}°",
     showarrow=False,
-    font=dict(size=13)
+    font=dict(size=13),
 )
 
+
 fig.add_annotation(
-    x=0.45 * internal_dx,
-    y=-0.45 * thickness,
+    x=0.5 * x1,
+    y=-0.5 * thickness,
     text=f"r = {r_deg:.2f}°",
     showarrow=False,
-    font=dict(size=13)
+    font=dict(size=13),
 )
+
 
 # ============================================================
 # MATERIAL LABELS
 # ============================================================
 
 fig.add_annotation(
-    x=-diameter * 0.35,
-    y=-thickness * 0.25,
+    x=slab_left + 0.15 * diameter,
+    y=-0.18 * thickness,
     text="<b>SILICON</b>",
     showarrow=False,
-    font=dict(size=13)
+    font=dict(size=13),
 )
 
+
 fig.add_annotation(
-    x=-diameter * 0.35,
-    y=thickness * 0.12,
+    x=slab_left + 0.15 * diameter,
+    y=0.12 * thickness,
     text="<b>AIR</b>",
     showarrow=False,
-    font=dict(size=13)
+    font=dict(size=13),
 )
+
 
 # ============================================================
 # NORMAL LABELS
@@ -856,135 +1127,222 @@ fig.add_annotation(
 
 fig.add_annotation(
     x=0,
-    y=normal_length * 0.65,
+    y=0.70 * normal_length,
     text="Normal",
     showarrow=False,
-    font=dict(size=12)
+    font=dict(size=12),
 )
+
 
 fig.add_annotation(
     x=back_x,
-    y=-thickness + normal_length * 0.65,
+    y=-thickness + 0.70 * normal_length,
     text="Normal",
     showarrow=False,
-    font=dict(size=12)
+    font=dict(size=12),
 )
 
+
 # ============================================================
-# FIGURE LAYOUT
+# RAY LABELS
 # ============================================================
 
-# Determine suitable display limits
-all_x = [
+fig.add_annotation(
+    x=0.65 * incident_start_x,
+    y=0.65 * incident_start_y,
+    text="Incident ray",
+    showarrow=False,
+    font=dict(size=12),
+)
+
+
+fig.add_annotation(
+    x=0.65 * front_reflected_end_x,
+    y=0.65 * front_reflected_end_y,
+    text="Front reflected beam",
+    showarrow=False,
+    font=dict(size=12),
+)
+
+
+fig.add_annotation(
+    x=0.5 * x1,
+    y=-0.75 * thickness,
+    text="Refracted ray",
+    showarrow=False,
+    font=dict(size=12),
+)
+
+
+fig.add_annotation(
+    x=second_front_x + 0.55 * (
+        back_reflected_end_x - second_front_x
+    ),
+    y=0.55 * back_reflected_end_y,
+    text="Back reflected beam",
+    showarrow=False,
+    font=dict(size=12),
+)
+
+
+# ============================================================
+# AXIS LIMITS
+# ============================================================
+
+x_values = [
     incident_start_x,
     front_reflected_end_x,
     back_reflected_end_x,
     back_x,
-    front_second_x
+    second_front_x,
+    A_x,
+    B_x,
 ]
 
-all_y = [
+y_values = [
     incident_start_y,
     front_reflected_end_y,
     back_reflected_end_y,
-    0,
-    -thickness
+    back_y,
+    A_y,
+    B_y,
 ]
 
+
 if not tir:
-    all_x.append(back_transmitted_end_x)
-    all_y.append(back_transmitted_end_y)
 
-x_min = min(all_x)
-x_max = max(all_x)
-y_min = min(all_y)
-y_max = max(all_y)
+    x_values.append(back_transmitted_end_x)
+    y_values.append(back_transmitted_end_y)
 
-x_range = x_max - x_min
-y_range = y_max - y_min
 
-x_padding = max(x_range * 0.20, thickness * 0.25)
-y_padding = max(y_range * 0.20, thickness * 0.20)
+x_min = min(x_values)
+x_max = max(x_values)
+
+y_min = min(y_values)
+y_max = max(y_values)
+
+
+x_span = max(x_max - x_min, 1.0)
+y_span = max(y_max - y_min, 1.0)
+
+
+x_padding = 0.15 * x_span
+y_padding = 0.15 * y_span
+
+
+# ============================================================
+# FINAL FIGURE LAYOUT
+# ============================================================
 
 fig.update_layout(
-    height=700,
+    height=760,
+
     margin=dict(
-        l=20,
-        r=20,
-        t=80,
-        b=20
+        l=30,
+        r=30,
+        t=100,
+        b=30,
     ),
+
     xaxis=dict(
         title="Distance parallel to surface (mm)",
         range=[
             x_min - x_padding,
-            x_max + x_padding
+            x_max + x_padding,
         ],
+        showgrid=True,
         zeroline=False,
-        showgrid=True
     ),
+
     yaxis=dict(
         title="Distance normal to surface (mm)",
         range=[
             y_min - y_padding,
-            y_max + y_padding
+            y_max + y_padding,
         ],
-        zeroline=False,
         showgrid=True,
+        zeroline=False,
+
+        # Preserve physical angles.
         scaleanchor="x",
-        scaleratio=1
+        scaleratio=1,
     ),
+
     legend=dict(
         orientation="h",
         yanchor="bottom",
         y=1.02,
         xanchor="left",
-        x=0
+        x=0,
     ),
-    hovermode="closest"
+
+    hovermode="closest",
+
+    plot_bgcolor="white",
+
+    showlegend=True,
 )
+
+
+# ============================================================
+# DISPLAY DIAGRAM
+# ============================================================
 
 st.plotly_chart(
     fig,
     use_container_width=True,
     config={
         "displaylogo": False,
-        "responsive": True
-    }
+        "responsive": True,
+    },
 )
 
+
 # ============================================================
-# OPTICAL INFORMATION
+# OPTICAL PHYSICS
 # ============================================================
 
 st.markdown(
-    '<div class="section-title">Optical conditions</div>',
-    unsafe_allow_html=True
+    '<div class="section-title">Live optical quantities</div>',
+    unsafe_allow_html=True,
 )
 
-c1, c2, c3 = st.columns(3)
 
-with c1:
+col1, col2, col3 = st.columns(3)
+
+
+with col1:
+
     st.markdown("### Snell's law")
+
     st.latex(
         r"""
-        n_{\rm air}\sin i =
-        n_{\rm Si}\sin r
+        n_{\mathrm{air}}\sin i
+        =
+        n_{\mathrm{Si}}\sin r
         """
+    )
+
+    st.write(
+        f"External incidence angle: **{i_deg:.2f}°**"
     )
 
     st.write(
         f"Internal angle: **{r_deg:.2f}°**"
     )
 
-with c2:
+
+with col2:
+
     st.markdown("### Critical angle")
+
     st.latex(
         r"""
         \theta_c =
         \sin^{-1}
         \left(
-        \frac{n_{\rm air}}{n_{\rm Si}}
+        \frac{n_{\mathrm{air}}}
+        {n_{\mathrm{Si}}}
         \right)
         """
     )
@@ -993,8 +1351,23 @@ with c2:
         f"Critical angle: **{critical_deg:.2f}°**"
     )
 
-with c3:
-    st.markdown("### Beam separation")
+    if tir:
+
+        st.write(
+            f"Internal angle > critical angle"
+        )
+
+    else:
+
+        st.write(
+            f"Internal angle < critical angle"
+        )
+
+
+with col3:
+
+    st.markdown("### Perpendicular beam gap")
+
     st.latex(
         r"""
         G =
@@ -1003,92 +1376,224 @@ with c3:
     )
 
     st.write(
-        f"Perpendicular separation: **{beam_gap:.2f} mm**"
+        f"Beam separation: **{beam_gap:.2f} mm**"
     )
+
 
 # ============================================================
 # TIR EXPLANATION
 # ============================================================
 
-st.markdown("---")
+st.markdown(
+    '<div class="section-title">Back surface condition</div>',
+    unsafe_allow_html=True,
+)
+
 
 if tir:
 
     st.markdown(
         f"""
-        <div class="tir-box">
-        <b>Total internal reflection occurs at the back surface.</b><br><br>
-        The relevant angle for determining TIR is the angle of the ray
-        <b>inside the silicon</b> measured from the normal.
-        Here:
+        <div class="status-tir">
+
+        <b>Total internal reflection occurs at the silicon → air
+        back surface.</b>
+
         <br><br>
-        Internal incidence angle = <b>{r_deg:.2f}°</b><br>
-        Critical angle = <b>{critical_deg:.2f}°</b>
+
+        At the back surface the ray is travelling inside silicon
+        and its incidence angle is measured from the back surface
+        normal.
+
         <br><br>
-        Since <b>{r_deg:.2f}° &gt; {critical_deg:.2f}°</b>,
-        the silicon → air interface undergoes total internal reflection.
+
+        Internal incidence angle:
+
+        <b>{r_deg:.2f}°</b>
+
+        <br>
+
+        Critical angle:
+
+        <b>{critical_deg:.2f}°</b>
+
+        <br><br>
+
+        Therefore:
+
+        <b>{r_deg:.2f}° &gt; {critical_deg:.2f}°</b>
+
         </div>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
 else:
 
     st.markdown(
         f"""
-        <div class="normal-box">
-        <b>Transmission occurs at the back surface.</b><br><br>
-        The relevant comparison is between the internal incidence angle
-        and the critical angle:
+        <div class="physics-note">
+
+        <b>Transmission occurs at the silicon → air back surface.</b>
+
         <br><br>
-        Internal incidence angle = <b>{r_deg:.2f}°</b><br>
-        Critical angle = <b>{critical_deg:.2f}°</b>
+
+        At the back surface the relevant angle is the
+        <b>internal incidence angle</b> inside silicon.
+
         <br><br>
-        Since <b>{r_deg:.2f}° &lt; {critical_deg:.2f}°</b>,
-        the ray can transmit from silicon into air.
+
+        Internal incidence angle:
+
+        <b>{r_deg:.2f}°</b>
+
+        <br>
+
+        Critical angle:
+
+        <b>{critical_deg:.2f}°</b>
+
+        <br><br>
+
+        Therefore:
+
+        <b>{r_deg:.2f}° &lt; {critical_deg:.2f}°</b>
+
+        and the ray can transmit into air.
+
         </div>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
+
 # ============================================================
-# INTERFACE REFLECTIVITY
+# FRESNEL OPTICS
 # ============================================================
 
 st.markdown(
     '<div class="section-title">Interface optics</div>',
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
-c1, c2 = st.columns(2)
 
-with c1:
+f1, f2, f3, f4 = st.columns(4)
+
+
+with f1:
+
     st.metric(
-        "Front surface reflectance",
-        f"{R_front * 100:.2f}%"
+        "Front surface R",
+        f"{R_front * 100:.2f}%",
     )
 
-with c2:
+
+with f2:
+
     st.metric(
-        "Front surface transmission",
-        f"{T_front * 100:.2f}%"
+        "Front surface T",
+        f"{T_front * 100:.2f}%",
     )
+
+
+if tir:
+
+    R_back = 1.0
+    T_back = 0.0
+
+else:
+
+    # For a lossless reciprocal interface, the power
+    # reflectance seen from silicon at the back surface
+    # is calculated separately using the silicon -> air
+    # incidence geometry.
+
+    cos_internal = np.cos(r_rad)
+
+    if polarisation == "s":
+
+        r_back = (
+            n_si * cos_internal - n_air * cos_i
+        ) / (
+            n_si * cos_internal + n_air * cos_i
+        )
+
+        R_back = r_back ** 2
+
+    elif polarisation == "p":
+
+        r_back = (
+            n_air * cos_internal - n_si * cos_i
+        ) / (
+            n_air * cos_internal + n_si * cos_i
+        )
+
+        R_back = r_back ** 2
+
+    else:
+
+        r_back_s = (
+            n_si * cos_internal - n_air * cos_i
+        ) / (
+            n_si * cos_internal + n_air * cos_i
+        )
+
+        r_back_p = (
+            n_air * cos_internal - n_si * cos_i
+        ) / (
+            n_air * cos_internal + n_si * cos_i
+        )
+
+        R_back = 0.5 * (
+            r_back_s ** 2
+            +
+            r_back_p ** 2
+        )
+
+    T_back = 1.0 - R_back
+
+
+with f3:
+
+    st.metric(
+        "Back surface R",
+        f"{R_back * 100:.2f}%",
+    )
+
+
+with f4:
+
+    st.metric(
+        "Back surface T",
+        f"{T_back * 100:.2f}%",
+    )
+
 
 st.caption(
-    f"λ = {wavelength:.0f} nm | "
-    f"nSi = {n_si:.4f} | "
-    f"nair = {n_air:.4f} | "
+    f"λ = {wavelength:.0f} nm  |  "
+    f"nSi = {n_si:.4f}  |  "
+    f"nair = {n_air:.4f}  |  "
     f"Polarisation = {polarisation}"
 )
 
+
 # ============================================================
-# IMPORTANT NOTE
+# PHYSICAL NOTE
 # ============================================================
 
 st.markdown(
     """
-    **Geometry convention:** The beam gap shown in the diagram is the
-    perpendicular distance between the two parallel reflected beams.
-    It is not the internal lateral displacement of the refracted ray.
-    """
+    <div class="physics-note">
+
+    <b>Important:</b> the two reflected beams shown in the diagram
+    are geometrically parallel because the silicon slab has parallel
+    front and back surfaces.
+
+    The displayed beam gap <b>G</b> is the perpendicular distance
+    between those two reflected beam paths. It is not the lateral
+    displacement of the refracted ray inside the silicon.
+
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
