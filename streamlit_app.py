@@ -2940,130 +2940,86 @@ else:
 
 
 # ============================================================
-# FRESNEL OPTICS
+# INTERFACE OPTICS AND POWER FLOW
 # ============================================================
 
-st.markdown(
-    '<div class="section-title">Interface optics</div>',
-    unsafe_allow_html=True,
-)
+st.markdown("## Interface optics")
 
+# Fresnel coefficients at the front surface
+# R_front and T_front are fractions of the incident power
+R_front = float(R_front)
+T_front = float(T_front)
 
-f1, f2, f3, f4 = st.columns(4)
+# Fresnel coefficients at the silicon -> air back surface
+# These describe what happens to the light ARRIVING at the back surface.
+R_back = float(R_back)
+T_back = float(T_back)
 
+# Power flow relative to the ORIGINAL incident beam
+#
+# Power reaching the back surface:
+P_back_incident = T_front
 
-with f1:
+# First reflection from the back surface:
+P_back_reflected = P_back_incident * R_back
 
+# First transmission through the back surface:
+P_back_transmitted = P_back_incident * T_back
+
+# Display the distinction clearly
+st.markdown("### Fresnel coefficients")
+
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
     st.metric(
-        "Front surface R",
-        f"{R_front * 100:.2f}%",
+        "Front surface reflectance",
+        f"{R_front * 100:.2f}%"
     )
 
-
-with f2:
-
+with col2:
     st.metric(
-        "Front surface T",
-        f"{T_front * 100:.2f}%",
+        "Front surface transmittance",
+        f"{T_front * 100:.2f}%"
     )
 
-
-if tir:
-
-    R_back = 1.0
-    T_back = 0.0
-
-else:
-
-    # For a lossless reciprocal interface, the power
-    # reflectance seen from silicon at the back surface
-    # is calculated separately using the silicon -> air
-    # incidence geometry.
-
-    cos_internal = np.cos(r_rad)
-
-    if polarisation == "s":
-
-        r_back = (
-            n_si * cos_internal - n_air * cos_i
-        ) / (
-            n_si * cos_internal + n_air * cos_i
-        )
-
-        R_back = r_back ** 2
-
-    elif polarisation == "p":
-
-        r_back = (
-            n_air * cos_internal - n_si * cos_i
-        ) / (
-            n_air * cos_internal + n_si * cos_i
-        )
-
-        R_back = r_back ** 2
-
-    else:
-
-        r_back_s = (
-            n_si * cos_internal - n_air * cos_i
-        ) / (
-            n_si * cos_internal + n_air * cos_i
-        )
-
-        r_back_p = (
-            n_air * cos_internal - n_si * cos_i
-        ) / (
-            n_air * cos_internal + n_si * cos_i
-        )
-
-        R_back = 0.5 * (
-            r_back_s ** 2
-            +
-            r_back_p ** 2
-        )
-
-    T_back = 1.0 - R_back
-
-
-with f3:
-
+with col3:
     st.metric(
-        "Back surface R",
-        f"{R_back * 100:.2f}%",
+        "Back surface reflectance",
+        f"{R_back * 100:.2f}%"
     )
 
-
-with f4:
-
+with col4:
     st.metric(
-        "Back surface T",
-        f"{T_back * 100:.2f}%",
+        "Back surface transmittance",
+        f"{T_back * 100:.2f}%"
     )
 
+st.markdown("### Power flow relative to original incident beam")
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.metric(
+        "Power reaching back surface",
+        f"{P_back_incident * 100:.2f}%"
+    )
+
+with col2:
+    st.metric(
+        "Power reflected at back surface",
+        f"{P_back_reflected * 100:.2f}%"
+    )
+
+with col3:
+    st.metric(
+        "Power transmitted through back surface",
+        f"{P_back_transmitted * 100:.2f}%"
+    )
 
 st.caption(
-    f"λ = {wavelength:.0f} nm  |  "
-    f"nSi = {n_si:.4f}  |  "
-    f"nair = {n_air:.4f}  |  "
-    f"Polarisation = {polarisation}"
-)
-
-
-# ============================================================
-# PHYSICAL NOTE
-# ============================================================
-
-st.markdown(
-    """
-    <div class="physics-note">
-
-    <b>Important:</b>
-
-    The displayed beam gap <b>G</b> is the perpendicular distance
-    between those two reflected beam paths. It is not the lateral
-    displacement of the refracted ray inside the silicon.
-
-    </div>
-    """,
-    unsafe_allow_html=True,
+    f"At the back surface, {P_back_incident * 100:.2f}% of the "
+    f"original incident power arrives. Of this, "
+    f"{R_back * 100:.2f}% is reflected and "
+    f"{T_back * 100:.2f}% is transmitted."
 )
